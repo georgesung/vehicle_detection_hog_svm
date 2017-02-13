@@ -93,7 +93,7 @@ After a heat map is generated, we threshold the heatmap into a binary image, the
 
 The above illustrations were based on a static image. However, in a video stream, we can take advantage of the temporal correlation between video frames. I can reduce the number of false positives by keeping track of a cumulative heat map over the past 30 frames in a video, and threshold the cumulative heatmap. The cumulative heatmap is enabled by a queue of "hot windows", and the implementation is in the class `HotWindows()` in the file 'HotWindows.py'.
 
-For the cumulative heat map, I chose a window history of 30 frames, and a heat map threshold of 30. These settings are in the variables `num_frames` and `heatmap_thresh`, respectively.
+For the cumulative heat map, I chose a window history of 30 frames, and a heat map threshold of 30. These settings are in the variables `num_frames` and `heatmap_thresh`, respectively. I found these settings give a good rejection rate for false positives, while not accumulating bounding boxes over too long a time period such that the detections lag behind too much.
 
 ## Final video output
 [Here](https://youtu.be/cipgjd5fhWg) is the final video output on Youtube. The same video is 'out.mp4' in this repo. The original video is 'project_video.mp4'.
