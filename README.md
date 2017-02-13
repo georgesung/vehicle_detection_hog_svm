@@ -21,10 +21,12 @@ I downloaded Udacity's data for this project, in which Udacity provided [vehicle
 
 After downloading the data, I ran `python pickle_data.py` to create 'data.p' in my working directory. The pickle file 'data.p' contains numpy arrays representing the vehicle and non-vehicle images. For more details please refer to the code in 'pickle_data.py'.
 
-Below is an example of an image in the "vehicle" class:
+The following is an example of an image in the "vehicle" class:
+
 ![vehicle](example_images/vehicle.png)
 
-Below is an example of an image in the "non-vehicle" class:
+The following is an example of an image in the "non-vehicle" class:
+
 ![non_vehicle](example_images/non_vehicle.png)
 
 ### Histogram of Oriented Gradients (HOG)
@@ -45,10 +47,14 @@ The above parameters are hard-coded in the file 'settings.py'.
 Below is a visualization of the HOG features on the example vehicle and non-vehicle images.
 
 Vehicle HOG:
+
 ![vehicle_hog](example_images/vehicle_hog.png)
 
 Non-vehicle HOG:
+
 ![non_vehicle_hog](example_images/non_vehicle_hog.png)
+
+Visually we can see that the HOG representation of the vehicle is significantly different than that of the non-vehicle example.
 
 Note I did not use spatial binning and color histograms, as I did not find them helpful from my experimentation.
 
@@ -59,7 +65,7 @@ In the function `train()`, I first extract the HOG features via `extract_feature
 
 After the above, I normalize the features by using scikit-learn's StandardScaler (see lines 34 and 36 in 'train.py').
 
-Using a train/test split of 95/5, I trained the SVM, and saved the final trained model to 'model.p'. I did not find the final test accuracy to be a good proxy of how well the vehicle detector performed, and I was getting 95%+ test accuracy in all of my parameter tuning experiments.
+Using a train/test split of 95/5, I trained the SVM, and saved the final trained model to 'model.p'. I did not find the final test accuracy to be a good proxy of how well the vehicle detector performed, and I was getting 95%+ test accuracy in all of my parameter tuning experiments. Since I didn't find the test accuracy to be very useful, I used a very small percentage of the training data for my test set, 5%. Originally I used 20% of the data for the test set.
 
 ### Sliding window search
 I implemented a basic sliding window search to detect areas in the image/video where a vehicle is likely present. A window size of 96x96 pixels worked well for the scale of vehicles present in the project video, so I only used this window size for this project. A potential enhancement is to use multiple window sizes across different areas of the image, e.g. smaller window sizes for areas closer to the horizon.
@@ -71,6 +77,7 @@ I chose an overlap percentage of 0.7 (i.e. 70%). I found this gave me reliable d
 The code to perform my sliding window search is in the functions `slide_window()` and `search_windows()` in the file 'windows.py'. These functions serve the same purpose as those presented in the lecture notes, where `slide_window()` returns a list of windows to search, and `search_windows()` uses the pre-trained HOG+SVM classifier to classify the image in each window as either "vehicle" or "non-vehicle". These function are called in the function `annotate_image()` in 'detect_video.py', and we can see the parameters passed to `slide_window()` in the function call. Note `pct_overlap` is the percentage overlap parameter, and it is defined in the file 'settings.py'.
 
 Below is an example of running my sliding window search on an image (blue boxes indicate a vehicle detection in that window):
+
 ![sliding_window](example_images/sliding_window.png)
 
 We can see there are many boxes detected as vehicles, even though not all boxes are vehicles.
@@ -78,7 +85,7 @@ We can see there are many boxes detected as vehicles, even though not all boxes 
 ### Final bounding box prediction
 As seen previously, there are many boxes detected as vehicles, but many of those boxes do not actually enclose a vehicle. However, notice that the density of boxes tend to be high around actual vehicles, so we can take advantage of this fact when predicting the final bounding box. We can do so via a heat map. I created a heat map by adding the contributions of each predicted bounding box, similar to the method presented in the lectures. A heat map created from the previous image is as follows:
 
-![heat_map](example_images/heat_map.png)
+![heatmap](example_images/heatmap.png)
 
 After a heat map is generated, we threshold the heatmap into a binary image, then use scikit-learn's `label()` function to draw the final bounding boxes based on our thresholded heat map. The heatmap threshold is specified by the variable `heatmap_thresh` in the file 'settings.py' (for a static image like this one, I used a `heatmap_thresh` of 1). Using this method, the final bounding boxes are predicted as such:
 
@@ -92,7 +99,7 @@ For the cumulative heat map, I chose a window history of 30 frames, and a heat m
 [Here](https://youtu.be/cipgjd5fhWg) is the final video output on Youtube. The same video is 'out.mp4' in this repo. The original video is 'project_video.mp4'.
 
 ## Discussion
-The main challenge for this project was parameter tweaking, mostly to reduce the number of false positives in the video. Even though the HOG+SVM classifier reported good results after training, it did not necessarily mean good results in the overall vehicle detection task.
+The main challenge for this project was parameter tuning, mostly to reduce the number of false positives in the video. Even though the HOG+SVM classifier reported good results after training, it did not necessarily mean good results in the overall vehicle detection task.
 
 Potential areas were the current vehicle detection pipeline would fail could be when there is a steep incline in the road ahead, since the sliding windows are hard-coded to not search above the horizon. Another potenial issue is that there are possibly other conditions where the classifier would produce false positives, not revealed by the video. More test cases are needed to confirm this, and improve the vehicle detector.
 
